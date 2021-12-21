@@ -1,0 +1,92 @@
+---
+- name: Update Critical
+  hosts: all
+  tasks:
+    - name: Install all critical and security updates
+      win_updates:
+        category_names:
+          - CriticalUpdates
+          - SecurityUpdates
+        state: installed
+      register: update_result
+    - name: Reboot host if required
+      win_reboot:
+      when: update_result.reboot_required
+- name: Install default apps
+  hosts: all
+  gather_facts: false
+  tasks:
+    #Upgrade all instaled packages
+    - name: Upgrade installed packages
+      win_chocolatey:
+        name: all
+        state: latest
+
+    - name: install Office365
+      win_chocolatey:
+        name: office365business #Dont be confused by "business"... will be drilled down via Exclude
+        state: present
+        #Install a O365 version and don't install described apps
+        package_params: " ' /productid:O365ProPlusRetail /Exclude:Access Groove Lync OneDrive Publisher ' "
+
+    - name: install Drivers
+      win_chocolatey:
+        name:
+          - razer-synapse-3
+
+    - name: install Tools
+      win_chocolatey:
+        name:
+          - brave 
+          - googlechrome
+          - greenshot
+          - adobereader
+          - adobe-creative-cloud
+          - everything
+          - hwmonitor
+          - nextcloud-client
+        ignore_checksums: true
+        state: present
+
+    - name: install DevTools
+      win_chocolatey:
+        name:
+          - adoptopenjdk
+          - maven
+          - git
+          - jetbrainstoolbox
+          - vscode
+          - jcpicker
+          - notepadplusplus
+        state: present
+
+    - name: install Multimedia
+      win_chocolatey:
+        name:
+          - spotify
+          - itunes
+
+    - name: install GamingLaunchers
+      win_chocolatey:
+        name:
+          - steam-client
+          - goggalaxy
+          - origin
+         # - epicgameslauncher
+          - ubisoft-connect
+        ignore_checksums: true          
+        state: present
+
+    - name: install Voice and VideoChats
+      win_chocolatey:
+        name:
+          - teamspeak
+          - discord
+        state: present
+
+    - name: install 3D-Printer-Tools
+      win_chocolatey:
+        name:
+          - cura-new
+          - openscad
+        state: present
